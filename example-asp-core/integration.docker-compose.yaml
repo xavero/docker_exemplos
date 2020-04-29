@@ -1,0 +1,47 @@
+version: "3.7"
+services:
+  # Configuração da nossa aplicação
+  myapp:
+    build: # ao rodar o "docker-compose up", compilar nossa aplicação
+      context: .
+      dockerfile: ./build.Dockerfile
+    ports:
+      - "9999:80" # expor no localhost a porta 9999 para acessar a aplicação
+    environment: # configurar a aplicação com variáveis de ambiente
+      - OTHERAPP_URL=otherapp:80
+      - REDIS_URL=myredis:6379
+      - REDIS_PASSWORD=devpassword
+      - RABBITMQ_URL=myrabbit:5672
+      - RABBITMQ_USER=devuser
+      - RABBITMQ_PASSWORD=devpassword
+  
+  # Configuração de dependência de uma outra aplicação interna.
+  # Nossa aplicação pode acessar essa dependencia pelo endereço otherapp:80
+  otherapp:
+    image: mydockeruser/otherapp:latest
+
+  # Configuração Redis. Não precisamos expor a porta porque iremos acessar apenas de containers dentro do docker.
+  # Para acessar, a aplicação usa o endereço myredis:6379
+  myredis:
+    image: redis:5.0.9-alpine
+    command: redis-server --requirepass devpassword
+    volumes:
+      - redis-data:/var/lib/redis
+    environment:
+      - REDIS_REPLICATION_MODE=master
+
+  # Configuração Rabbit (mensageria)
+  myrabbit:
+    image: rabbitmq:3.8-management
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=devuser
+      - RABBITMQ_DEFAULT_PASS=devpassword
+
+# Persistência
+# os volumes são criados automaticamentes dentro da pasta padrão do docker,
+# mas poderiam ser mapeados para outras pastas dentro do host
+volumes:
+  redis-data: 
+  rabbitmq-data:

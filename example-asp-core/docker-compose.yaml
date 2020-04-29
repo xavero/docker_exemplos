@@ -1,0 +1,10 @@
+version: "3.7"
+services:
+  myappnetcore:
+    image: mydockeruser/myapp:latest
+    build:
+      context: .
+      dockerfile: ./build.Dockerfile
+    ports:
+      - "9999:80"
+    

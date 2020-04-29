@@ -1,0 +1,24 @@
+# docker stack deploy -c example-asp-core\swarm.docker-compose.yaml swarmdemo
+version: "3.7"
+services:
+  myapp: # nome da aplicação
+    image: mydockeruser/myapp:1.0.0  # nome da imagem e versão da sua aplicação
+    ports:
+      - "9997:80" # conectar na aplicação através da porta 9997
+    healthcheck: # comando para testar se a aplicação está no ar
+      test: curl -f http://localhost || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    deploy:
+      replicas: 4 # quantidade de containers da mesma aplicação
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.50'  # 50% de uma cpu
+          memory: 100M
+        reservations:
+          cpus: '0.25'
+          memory: 25M
